@@ -1,13 +1,15 @@
-from .user import User, Role
+from .user import User
 from data.storage import DataStorage as storage
 from models.notifications import Notification, Priority
 from datetime import datetime
 from models.assignments import Assignment
 class Parent(User):
+
     def __init__(self, id: int, full_name: str, email: str, password_hash: str):
-        super().__init__(id, full_name, email, password_hash, Role.PARENT)
+        from .enum import Role
+        super().__init__(id, full_name, email, password_hash,role= Role.PARENT, created_at=datetime.now())
         self.children = []  # List of child student IDs
-    def add_child(self, child_id: int):
+    def add_child(self, child_id: int,storage: storage):
         """Add a child to the parent's list of children."""
         if child_id in self.children:
             raise ValueError("Child already added.")
@@ -84,11 +86,10 @@ class Parent(User):
 
         # Retrieve existing notifications
         notifications = storage.get_notifications_by_user(self.id)
-        child_notifications = [
-            notif.to_dict() for notif in notifications
-            if f"Child {child_id}" in notif.message  # Filter notifications about this child
-        ]
-
+        if notifications:
+            child_notifications = [notif.to_dict() for notif in notifications if f"Child {child_id}" in notif.message]
+        else:
+            child_notifications =[]
         # Generate new notifications if requested
         if advanced:
             # Check for low grades

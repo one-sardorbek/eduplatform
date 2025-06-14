@@ -1,8 +1,10 @@
-from .user import User, Role
+from .user import User
 from data.storage import DataStorage as storage
+from datetime import datetime
 class Teacher(User):
     def __init__(self, id: int, full_name: str, email: str, password_hash: str):
-        super().__init__(id, full_name, email, password_hash, Role.TEACHER)
+        from .enum import Role
+        super().__init__(id, full_name, email, password_hash,role= Role.TEACHER, created_at=datetime.now())
         self.subjects = []  # List of subjects taught by the teacher
         self.classes = []  # List of classes the teacher is assigned to
         self.assignments = {}  # Dictionary to hold assignments created by the teacher

@@ -1,10 +1,11 @@
-from .user import User, Role
+from .user import User
 from data.storage import DataStorage as storage
-from models.assignments import Assignment
 from utils.validation import validate_class_id
+from datetime import datetime
 class Student(User):
     def __init__(self, id: int, full_name: str, email: str, password_hash: str, class_id: str):
-        super().__init__(id, full_name, email, password_hash,Role.STUDENT) 
+        from .enum import Role
+        super().__init__(id, full_name, email, password_hash,role= Role.STUDENT,created_at=datetime.now()) 
         if validate_class_id(class_id):
             raise ValueError("Class ID must be a valid string eg: '9-A'")
         self.class_id = class_id

@@ -8,19 +8,10 @@ class Schedule:
         self.day = day
         self.lessons = {} # (lug‘at: {time: {subject, teacher_id}})
 
-    def add_lesson(self,time: str, subject: str, teacher_id: int):
-        teacher_lessons = storage.get_schedule_by_teacher(teacher_id)
-        if check_schedule_conflict(self.class_id, time, self.day):
-            raise ValueError(f"Class {self.class_id} already has a lesson at {time} on {self.day}")
-        if teacher_lessons:
-            for lesson in teacher_lessons:
-                if lesson['day'] == self.day and time in lesson['lessons']:
-                    raise ValueError(f"Teacher {teacher_id} already has a lesson at {time} on {self.day}")
-        student_lessons = storage.get_schedule_by_class(self.class_id)
-        if student_lessons:
-            for lesson in student_lessons:
-                if lesson['day'] == self.day and time in lesson['lessons']:
-                    raise ValueError(f"Class {self.class_id} already has a lesson at {time} on {self.day}")
+    def add_lesson(self, time: str, subject: str, teacher_id: int, storage = storage()):
+        """Add a lesson to the schedule with conflict checking."""
+        if check_schedule_conflict(self.lessons, time, self.class_id, self.day, teacher_id, storage):
+            raise ValueError(f"Conflict: Teacher {teacher_id} or class {self.class_id} already has a lesson at {time} on {self.day}")
         if time not in self.lessons:
             self.lessons[time] = {}
             self.lessons[time]['subject'] = subject

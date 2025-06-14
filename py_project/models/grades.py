@@ -47,5 +47,16 @@ class Grade:
         grades= storage.get_grades_by_student(student_id)
         grades = grades.sort(key=lambda x: x.date, reverse=True)
         return [grade.get_grade_info() for grade in grades]
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "student_id": self.student_id,
+            "subject": self.subject,
+            "value": self.value,
+            "date": self.date,
+            "teacher_id": self.teacher_id,
+            "comments": self.comments
+        }
       
     

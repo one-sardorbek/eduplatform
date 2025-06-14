@@ -1,11 +1,6 @@
 from typing import List, Dict, Optional
 from datetime import datetime,timedelta
-from core.user import User
-from core.student import Student
-from models.assignments import Assignment
-from models.grades import Grade
-from models.schedule import Schedule
-from models.notifications import Notification, Priority
+
 
 class DataStorage:
     def __init__(self):
@@ -16,10 +11,12 @@ class DataStorage:
         self.notifications = {}
 
     #user management
-    def add_user(self, user: User):
-        self.users[user.id] = user
+    def add_user(self, user):
+        from core.user import User
+        if isinstance(user, User):
+            self.users[user.id] = user
     
-    def get_user(self, user_id: int) -> Optional[User]:
+    def get_user(self, user_id: int):
         return self.users.get(user_id)
     
     def remove_user(self, user_id):
@@ -27,39 +24,51 @@ class DataStorage:
             del self.users[user_id]
 
     def get_students_by_class(self, class_id: str):
+        from core.student import Student
         """Retrieve a list of student IDs for a given class."""
         return [user.id for user in self.users.values() if isinstance(user, Student) and user.grade == class_id]        
     
     # Notification management
 
-    def add_notification(self, notification: Notification):
-        self.notifications[notification.id] = notification
+    def add_notification(self, notification):
+        from models.notifications import Notification
+        from models.notifications import Priority
+        if isinstance(notification, Notification):
+            self.notifications[notification.id] = notification
     
-    def get_notification(self, notification_id: int) -> Optional[Notification]:
+    def get_notification(self, notification_id: int):
         return self.notifications.get(notification_id)
     
     def remove_notification(self, notification_id: int):
         if notification_id in self.notifications:
             del self.notifications[notification_id]
     
-    def get_notifications_by_user(self, user_id: int, unread_only: bool = False, priority: Optional[Priority] = None) -> List[Notification]:
-        notifications = [n for n in self.notifications.values() if n.recipient_id == user_id]
-        if unread_only:
-            notifications = [n for n in notifications if not n.is_read]
-        if priority:
-            notifications = [n for n in notifications if n.priority == priority]
-        return notifications
+    def get_notifications_by_user(self, user_id: int, unread_only: bool = False, priority = None):
+        from models.notifications import Notification, Priority
+        if isinstance(priority, Priority):
+            notifications = [n for n in self.notifications.values() if n.recipient_id == user_id]
+            if unread_only:
+                notifications = [n for n in notifications if not n.is_read]
+            if priority:
+                notifications = [n for n in notifications if n.priority == priority]
+            return notifications
     
-    def filter_notifications(self, unread_only: bool = False, priority: Optional[Priority] = None) -> List[Notification]:
+    def filter_notifications(self, unread_only: bool = False, priority = None):
         """Filter notifications based on read status and priority."""
-        notifications = list(self.notifications.values())
-        if unread_only:
-            notifications = [n for n in notifications if not n.is_read]
-        if priority:
-            notifications = [n for n in notifications if n.priority == priority]
-        return notifications
+        from models.notifications import Notification, Priority
+        if isinstance(priority, Priority):
+            notifications = list(self.notifications.values())
+            if unread_only:
+                notifications = [n for n in notifications if not n.is_read]
+            if priority:
+                notifications = [n for n in notifications if n.priority == priority]
+            return notifications
     
-    def send_automatic_notification(self, recipient_id: int, priority: Priority = Priority.HIGH):
+    def send_automatic_notification(self, recipient_id: int, priority):
+        from models.notifications import Notification, Priority
+        if not priority:
+            priority = Priority.HIGH
+        from core.student import Student
         if isinstance(self.get_user(recipient_id),Student):
             for assignment in self.assignments.values():
                 deadline = datetime.fromisoformat(assignment.deadline)
@@ -76,12 +85,15 @@ class DataStorage:
     
     
     # Schedule Management
-    def add_schedule(self, schedule: Schedule):
+    def add_schedule(self, schedule):
         """Add a schedule to the storage."""
-        self.schedules[schedule.id] = schedule
+        from models.schedule import Schedule
+        from models.notifications import Notification
+        if isinstance(schedule, Schedule):
+            self.schedules[schedule.id] = schedule
         Notification.notify_schedule_change(schedule, self)
 
-    def get_schedule(self, schedule_id: int) -> Optional[Schedule]:
+    def get_schedule(self, schedule_id: int):
         """Retrieve a schedule by its ID."""
         return self.schedules.get(schedule_id)
 
@@ -90,21 +102,21 @@ class DataStorage:
         if schedule_id in self.schedules:
             del self.schedules[schedule_id]
 
-    def get_schedules_by_class(self, class_id: str) -> List[Schedule]:
+    def get_schedules_by_class(self, class_id: str):
         """Retrieve all schedules for a specific class."""
         return [schedule for schedule in self.schedules.values() if schedule.class_id == class_id]
 
-    def get_schedules_by_teacher(self, teacher_id: int) -> List[Schedule]:
+    def get_schedules_by_teacher(self, teacher_id: int):
         """Retrieve all schedules for a specific teacher."""
         return [schedule for schedule in self.schedules.values() if any(lesson["teacher_id"] == teacher_id for lesson in schedule.lessons.values())]
-    def get_schedules_by_week(self, week_start: datetime, week_end: datetime) -> List[Schedule]:
+    def get_schedules_by_week(self, week_start: datetime, week_end: datetime):
         """Retrieve all schedules that fall within a specific week."""
         return [schedule for schedule in self.schedules.values() if any(
             datetime.fromisoformat(lesson["time"]) >= week_start and datetime.fromisoformat(lesson["time"]) <= week_end
             for lesson in schedule.lessons.values()
         )]
     
-    def get_schedules_by_month(self, month: int, year: int) -> List[Schedule]:
+    def get_schedules_by_month(self, month: int, year: int):
         """Retrieve all schedules that fall within a specific month."""
         start_date = datetime(year, month, 1)
         end_date = datetime(year, month + 1, 1) if month < 12 else datetime(year + 1, 1, 1)
@@ -115,11 +127,13 @@ class DataStorage:
     
     # Assignment management
 
-    def add_assignment(self, assignment: Assignment):
-        self.assignments[assignment.id] = assignment
+    def add_assignment(self, assignment):
+        from models.assignments import Assignment
+        if isinstance(assignment, Assignment):
+            self.assignments[assignment.id] = assignment
         
 
-    def get_assignment(self, assignment_id: int) -> Optional[Assignment]:
+    def get_assignment(self, assignment_id: int) :
         return self.assignments.get(assignment_id)
     
     def remove_assignment(self, assignment_id: int):
@@ -127,12 +141,13 @@ class DataStorage:
         if assignment_id in self.assignments:
             del self.assignments[assignment_id]
 
-    def get_assignments_by_class(self, class_id: str) -> List[Assignment]:
+    def get_assignments_by_class(self, class_id: str):
         """Retrieve all assignments for a specific class."""
         return [assignment for assignment in self.assignments.values() if assignment.class_id == class_id]
 
-    def get_assignments_by_student(self, student_id: int) -> List[Assignment]:
+    def get_assignments_by_student(self, student_id: int):
         """Retrieve all assignments assigned to a specific student."""
+        from core.student import Student
         student = self.get_user(student_id)
         if isinstance(student, Student):
             return [self.assignments[assignment_id] for assignment_id in student.assignments.keys() if assignment_id in self.assignments]
@@ -140,6 +155,7 @@ class DataStorage:
     
     def assign_assignment_to_class(self, assignment_id: int, class_id: str) -> bool:
         """Assign an assignment to all students in a class."""
+        from core.student import Student
         if assignment_id not in self.assignments:
             return False
         student_ids = self.get_students_by_class(class_id)
@@ -152,11 +168,13 @@ class DataStorage:
 
     # Grade management
 
-    def add_grade(self, grade: Grade):
+    def add_grade(self, grade):
         """Add a grade to the storage."""
-        self.grades[grade.id] = grade
+        from models.grades import Grade
+        if isinstance(grade, Grade):
+            self.grades[grade.id] = grade
 
-    def get_grade(self, grade_id: int) -> Optional[Grade]:
+    def get_grade(self, grade_id: int):
         """Retrieve a grade by its ID."""
         return self.grades.get(grade_id)
 
@@ -165,7 +183,7 @@ class DataStorage:
         if grade_id in self.grades:
             del self.grades[grade_id]
 
-    def get_grades_by_student(self, student_id: int, subject: str = None) -> List[Grade]:
+    def get_grades_by_student(self, student_id: int, subject: str = None):
         """Retrieve all grades for a specific student, optionally filtered by subject."""
         grades = [grade for grade in self.grades.values() if grade.student_id == student_id]
         if subject:
@@ -239,6 +257,7 @@ class DataStorage:
         Returns:
             Dict: Summary of the student's progress, including grades, assignment status, and statistics.
         """
+        from core.student import Student
         student = self.get_user(student_id)
         if not isinstance(student, Student):
             return {"error": "Student not found or invalid ID"}
@@ -283,3 +302,13 @@ class DataStorage:
             "completion_rate": round(completion_rate, 2),
             "statistics": stats
         }
+    
+    def add_parent_child(self, parent_id: int, child_id: int) -> bool:
+        """Add a child to a parent's list of children."""
+        from core.parent import Parent
+        parent = self.get_user(parent_id)
+        if isinstance(parent, Parent):
+            if child_id not in parent.children:
+                parent.children.append(child_id)
+                return True
+        return False

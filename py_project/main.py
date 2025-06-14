@@ -16,9 +16,11 @@ def main():
     storage = DataStorage()
 
     student = Student(1, "Ali Valiev", "ali@example.com", hash_password("pass123"), "9-A")
-    teacher = Teacher(2, "Nodira Teacher", "nodira@example.com", hash_password("teach123"), ["Math", "Physics"], ["9-A"])
+    teacher = Teacher(2, "Nodira Teacher", "nodira@example.com", hash_password("teach123"))
+    teacher.subjects = ["Math", "Physics"]
+    teacher.classes = ["9-A"]
     parent = Parent(3, "Ota Ona", "parent@example.com", hash_password("parent123"))
-    parent.add_child(1)
+    parent.add_child(child_id=1,storage=storage)
     admin = Admin(4, "Admin User", "admin@example.com", hash_password("admin123"))
     
     storage.add_user(student)
@@ -48,16 +50,15 @@ def main():
     success, message = admin.add_schedule(schedule, storage)
     print(f"Add schedule: {message}")
 
-    assignment = Assignment(id=1, title="Math Homework", description="Solve equations 1-10", 
-                           deadline="2025-06-14T23:59:00", subject="Math", teacher_id=2, class_id="9-A")
+    assignment = Assignment(id=1, title="Math Homework", description="Solve equations 1-10", deadline="2025-06-14T23:59:00", subject="Math", teacher_id=2, class_id='9-A')
     success = admin.add_assignment(assignment, storage)
     print(f"Add assignment: {'Success' if success else 'Failed'}")
 
-    grade = Grade(id=1, student_id=1, subject="Math", value=85, date_assigned=datetime.now())
+    grade = Grade(id=1, student_id=1, subject="Math", value=5, date=datetime.now(), teacher_id=2, comments=["Good job!"])
     success = admin.add_grade(grade, storage)
     print(f"Add grade: {'Success' if success else 'Failed'}")
 
-    notifications = parent.receive_child_notification(child_id=1, storage=storage, generate_new=True)
+    notifications = parent.receive_child_notification(child_id=1, storage=storage, advanced =True)
     print("\n--- Parent Notifications ---")
     for notif in notifications:
         print(f"Notification: {notif['message']} (Priority: {notif['priority']})")
