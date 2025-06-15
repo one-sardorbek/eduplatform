@@ -164,7 +164,14 @@ class DataStorage:
             if isinstance(student, Student):
                 student.assignments[assignment_id] = {"status": "Pending", "content": ""}
         return True
-    
+    def update_user_assignments(self, user_id: int, assignments: Dict[int, Dict[str, str]]) -> bool:
+        from core.student import Student
+        """Update the assignments dictionary for a user in storage."""
+        user = self.get_user(user_id)
+        if isinstance(user, Student):
+            user.assignments = assignments
+            return True
+        return False
 
     # Grade management
 

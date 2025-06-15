@@ -53,23 +53,23 @@ def main():
 
     print("\n--- Teacher Actions ---")
     
-    assignment= Assignment(id=1, title="Math Homework", description="Solve equations 1-10", deadline="2025-06-14T23:59:00", subject="Math", teacher_id=teacher.id, class_id='9-A')
+    assignment= Assignment(id=1, title="Math Homework", description="Solve equations 1-10", deadline="2025-06-15T23:59:00", subject="Math", teacher_id=teacher.id, class_id='9-A')
     teacher.create_assignment(assignment=assignment,storage=storage)
     if assignment.id in storage.assignments:
         print(f"Created assignment {assignment.id} for class {assignment.class_id}")
    
     
     print("\n--- Student Actions ---")
-    student.submit_assignment(assignment_id=1, content="Here is my solution")
+    student.submit_assignment(assignment_id=1, content="Here is my solution",storage=storage)
     print(f"Student {student.full_name} submitted assignment {assignment.id}")
 
     print("\n--- Teacher Actions ---")
-    teacher.view_student_submissions(student_id=1, assignment_id=1)
-    teacher.grade_assignment(assignment_id=1, student_id=1, grade=4)
+    teacher.view_student_submissions(student_id=1, assignment_id=1, storage=storage)
+    teacher.grade_assignment(assignment_id=1, student_id=1, grade=4, storage=storage)
     print(f"Graded assignment 1 for student {student.id} with grade 4")
 
 
-    notifications = parent.receive_child_notification(child_id=1, advanced =True)
+    notifications = parent.receive_child_notification(child_id=1,storage=storage,generate_new =True)
     print("\n--- Parent Notifications ---")
     for notif in notifications:
         print(f"Notification: {notif['message']} (Priority: {notif['priority']})")

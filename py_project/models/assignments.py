@@ -35,7 +35,7 @@ class Assignment:
         
             self.submissions[student_id] = content
            
-    def set_grade(self,student_id: int, grade: int):
+    def set_grade(self,student_id: int, grade: int,storage: storage):
         if not isinstance(grade, int) or grade < 1 or grade > 5:
             return False
         if student_id in self.submissions:

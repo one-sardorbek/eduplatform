@@ -3,6 +3,8 @@ from data.storage import DataStorage as storage
 from models.notifications import Notification, Priority
 from datetime import datetime
 from models.assignments import Assignment
+from typing import List
+from .student import Student
 class Parent(User):
 
     def __init__(self, id: int, full_name: str, email: str, password_hash: str,storage= storage()):
@@ -68,37 +70,19 @@ class Parent(User):
     
 
 
-    def receive_child_notification(self, child_id: int, storage: storage, advanced: bool = False):
-        """
-        Retrieve or generate notifications about a specific child.
-
-        Args:
-            child_id (int): ID of the child (student).
-            storage (DataStorage): DataStorage instance to access grades, assignments, and notifications.
-            generate_new (bool): If True, generate new notifications for triggers (e.g., low grades).
-
-        Returns:
-            List[Dict]: List of notification dictionaries related to the child.
-        """
-        # Validate child_id
+    def receive_child_notification(self, child_id: int, storage: storage, generate_new: bool = False) -> List[dict]:
         if child_id not in self.children:
             return [{"error": f"Child ID {child_id} is not linked to this parent"}]
 
-        # Retrieve existing notifications
         notifications = storage.get_notifications_by_user(self.id)
         if notifications:
             child_notifications = [notif.to_dict() for notif in notifications if f"Child {child_id}" in notif.message]
         else:
-            child_notifications =[]
-        # Generate new notifications if requested
-        if advanced:
-            # Check for low grades
+            child_notifications = []
+        if generate_new:
             grades = storage.get_grades_by_student(child_id)
             for grade in grades:
-                if grade.value <= 3 and not any(
-                    f"Low grade ({grade.value}) in {grade.subject}" in notif["message"]
-                    for notif in child_notifications
-                ):
+                if grade.value <= 3 and not any(f"Low grade ({grade.value}) in {grade.subject}" in notif["message"] for notif in child_notifications):
                     new_notification = Notification(
                         id=len(storage.notifications) + 1,
                         message=f"Child {child_id}: Low grade ({grade.value}) in {grade.subject}",
@@ -108,23 +92,22 @@ class Parent(User):
                     new_notification.send(storage)
                     child_notifications.append(new_notification.to_dict())
 
-            # Check for missed assignment deadlines
             assignments = storage.get_assignments_by_student(child_id)
-            for assignment in assignments:
-                if (datetime.fromisoformat(assignment.deadline) < datetime.now() and
-                        assignment.id in storage.get_user(child_id).assignments and
-                        storage.get_user(child_id).assignments[assignment.id]["status"] != "Submitted" and
-                        not any(
-                            f"Missed deadline for {assignment.title}" in notif["message"]
-                            for notif in child_notifications
-                        )):
-                    new_notification = Notification(
-                        id=len(storage.notifications) + 1,
-                        message=f"Child {child_id}: Missed deadline for {assignment.title} in {assignment.subject}",
-                        recipient_id=self.id,
-                        priority=Priority.MEDIUM
-                    )
-                    new_notification.send(storage)
-                    child_notifications.append(new_notification.to_dict())
+            student = storage.get_user(child_id)
+            if student and isinstance(student, Student):
+                for assignment in assignments:
+                    assignment_status = student.assignments.get(assignment.id, {})
+                    if (datetime.fromisoformat(assignment.deadline) < datetime.now() and
+                        (not isinstance(assignment_status, dict) or assignment_status.get("status") != "Submitted") and
+                        not any(f"Missed deadline for {assignment.title}" in notif["message"] for notif in child_notifications)):
+                        new_notification = Notification(
+                            id=len(storage.notifications) + 1,
+                            message=f"Child {child_id}: Missed deadline for {assignment.title} in {assignment.subject}",
+                            recipient_id=self.id,
+                            priority=Priority.MEDIUM
+                            
+                        )
+                        new_notification.send(storage)
+                        child_notifications.append(new_notification.to_dict())
 
         return child_notifications

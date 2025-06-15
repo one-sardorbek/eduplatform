@@ -17,7 +17,7 @@ class Teacher(User):
         storage.add_assignment(assignment)  # Store the assignment in the data storage
         storage.assign_assignment_to_class(assignment.id, assignment.class_id)  # Assign to class
 
-    def view_student_submissions(self, student_id: int,assignment_id: int, storage=storage):
+    def view_student_submissions(self, student_id: int,assignment_id: int, storage:storage):
         assignment= storage.get_assignment(assignment_id)
         for assignment in self.assignments.values():
             if assignment.id == assignment_id:
@@ -25,7 +25,7 @@ class Teacher(User):
                     raise ValueError("No submission found for this student.")
                 return assignment.submissions[student_id]
             
-    def grade_assignment(self,assignment_id: int, student_id: int, grade: int,storage=storage):
+    def grade_assignment(self,assignment_id: int, student_id: int, grade: int,storage:storage):
         """Grade a student's assignment."""
         assignment = storage.get_assignment(assignment_id)
         if not assignment:
@@ -35,7 +35,7 @@ class Teacher(User):
         if not (1 <= grade <= 5):
             raise ValueError("Grade must be between 1 and 5.")
         
-        assignment.set_grade(student_id, grade)
+        assignment.set_grade(student_id, grade,storage=storage)
     
     def view_student_progress(student_id):
         progress = storage.view_student_progress(student_id)

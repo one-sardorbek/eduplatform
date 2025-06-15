@@ -8,11 +8,11 @@ class Priority(Enum):
     HIGH = "High"
 
 class Notification:
-    def __init__(self, id : int, message: str, recipient_id: int, created_at: datetime, priority: Priority = Priority.MEDIUM, is_read: bool = False): 
+    def __init__(self, id : int, message: str, recipient_id: int, created_at= datetime.now().isoformat(), priority: Priority = Priority.MEDIUM, is_read: bool = False): 
         self.id = id
         self.message = message
         self.recipient_id = recipient_id
-        self.created_at = created_at.now().isoformat()
+        self.created_at = created_at
         self.priority = priority
         self.is_read = is_read
 
