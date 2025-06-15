@@ -26,7 +26,7 @@ class DataStorage:
     def get_students_by_class(self, class_id: str):
         from core.student import Student
         """Retrieve a list of student IDs for a given class."""
-        return [user.id for user in self.users.values() if isinstance(user, Student) and user.grade == class_id]        
+        return [user.id for user in self.users.values() if isinstance(user, Student) and user.grades == class_id]        
     
     # Notification management
 

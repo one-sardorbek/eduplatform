@@ -5,7 +5,7 @@ from datetime import datetime
 from models.assignments import Assignment
 class Parent(User):
 
-    def __init__(self, id: int, full_name: str, email: str, password_hash: str):
+    def __init__(self, id: int, full_name: str, email: str, password_hash: str,storage= storage()):
         from .enum import Role
         super().__init__(id, full_name, email, password_hash,role= Role.PARENT, created_at=datetime.now())
         self.children = []  # List of child student IDs

@@ -13,7 +13,7 @@ class Student(User):
         self.assignments = {}
         self.grades = {}
 
-    def submit_assignment(self, assignment_id: int, content: str):
+    def submit_assignment(self, assignment_id: int, content: str,storage = storage()):
         assignment = storage.get_assignment(assignment_id)
         assignment.add_submission(self.id, content)
     

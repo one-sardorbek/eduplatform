@@ -2,7 +2,7 @@ from core.student import Student
 from core.teacher import Teacher
 from core.admin import Admin
 from core.parent import Parent
-from data.storage import DataStorage
+from data.storage import DataStorage 
 from models.schedule import Schedule
 from models.assignments import Assignment
 from models.grades import Grade
@@ -13,8 +13,8 @@ from utils.validation import validate_class_id, validate_time_slot
 from datetime import datetime, time
 
 def main():
-    storage = DataStorage()
-
+    
+    storage=DataStorage()
     student = Student(1, "Ali Valiev", "ali@example.com", hash_password("pass123"), "9-A")
     teacher = Teacher(2, "Nodira Teacher", "nodira@example.com", hash_password("teach123"))
     teacher.subjects = ["Math", "Physics"]
@@ -50,15 +50,26 @@ def main():
     success, message = admin.add_schedule(schedule, storage)
     print(f"Add schedule: {message}")
 
-    assignment = Assignment(id=1, title="Math Homework", description="Solve equations 1-10", deadline="2025-06-14T23:59:00", subject="Math", teacher_id=2, class_id='9-A')
-    success = admin.add_assignment(assignment, storage)
-    print(f"Add assignment: {'Success' if success else 'Failed'}")
 
-    grade = Grade(id=1, student_id=1, subject="Math", value=5, date=datetime.now(), teacher_id=2, comments=["Good job!"])
-    success = admin.add_grade(grade, storage)
-    print(f"Add grade: {'Success' if success else 'Failed'}")
+    print("\n--- Teacher Actions ---")
+    
+    assignment= Assignment(id=1, title="Math Homework", description="Solve equations 1-10", deadline="2025-06-14T23:59:00", subject="Math", teacher_id=teacher.id, class_id='9-A')
+    teacher.create_assignment(assignment=assignment,storage=storage)
+    if assignment.id in storage.assignments:
+        print(f"Created assignment {assignment.id} for class {assignment.class_id}")
+   
+    
+    print("\n--- Student Actions ---")
+    student.submit_assignment(assignment_id=1, content="Here is my solution")
+    print(f"Student {student.full_name} submitted assignment {assignment.id}")
 
-    notifications = parent.receive_child_notification(child_id=1, storage=storage, advanced =True)
+    print("\n--- Teacher Actions ---")
+    teacher.view_student_submissions(student_id=1, assignment_id=1)
+    teacher.grade_assignment(assignment_id=1, student_id=1, grade=4)
+    print(f"Graded assignment 1 for student {student.id} with grade 4")
+
+
+    notifications = parent.receive_child_notification(child_id=1, advanced =True)
     print("\n--- Parent Notifications ---")
     for notif in notifications:
         print(f"Notification: {notif['message']} (Priority: {notif['priority']})")

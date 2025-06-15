@@ -32,10 +32,9 @@ class Assignment:
         self.grades = {}
 
     def add_submission(self, student_id: int, content: str):
-        if student_id not in self.submissions:
+        
             self.submissions[student_id] = content
-            return True
-        return False
+           
     def set_grade(self,student_id: int, grade: int):
         if not isinstance(grade, int) or grade < 1 or grade > 5:
             return False

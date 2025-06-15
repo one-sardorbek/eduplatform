@@ -9,7 +9,7 @@ class Teacher(User):
         self.classes = []  # List of classes the teacher is assigned to
         self.assignments = {}  # Dictionary to hold assignments created by the teacher
 
-    def create_assignment(self, assignment):
+    def create_assignment(self, assignment, storage=storage):
         """Create a new assignment."""
         if assignment.id in self.assignments:
             raise ValueError("Assignment with this ID already exists.")
@@ -17,7 +17,15 @@ class Teacher(User):
         storage.add_assignment(assignment)  # Store the assignment in the data storage
         storage.assign_assignment_to_class(assignment.id, assignment.class_id)  # Assign to class
 
-    def grade_assignment(self,assignment_id: int, student_id: int, grade: int):
+    def view_student_submissions(self, student_id: int,assignment_id: int, storage=storage):
+        assignment= storage.get_assignment(assignment_id)
+        for assignment in self.assignments.values():
+            if assignment.id == assignment_id:
+                if student_id not in assignment.submissions:
+                    raise ValueError("No submission found for this student.")
+                return assignment.submissions[student_id]
+            
+    def grade_assignment(self,assignment_id: int, student_id: int, grade: int,storage=storage):
         """Grade a student's assignment."""
         assignment = storage.get_assignment(assignment_id)
         if not assignment:
